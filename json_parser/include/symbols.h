@@ -16,6 +16,7 @@ enum Symbol {
     TS_ARR_START, // [
     TS_ARR_END,   // ]
     TS_MARK,      // "
+    TS_DIGIT,     // 0-9
     TS_BSLASH,    // '\'
     TS_CHAIN,     // :
     TS_NEXT,      // ,

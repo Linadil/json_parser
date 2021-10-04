@@ -23,7 +23,7 @@ JP::JsonParser(const string& path)
     table[TS_OBJ_END][TS_NEXT]     = 7; // , PAIR
     table[TS_ARR_END][TS_NEXT]     = 8; // , VALUE
     table[NTS_PAIR][TS_MARK]       = 9; // KEY : VALUE
-    //table[NTS_VALUE][TS_NUM]       = 10;
+    table[NTS_VALUE][TS_DIGIT]     = 10;
 }
 
 JP::~JsonParser()
@@ -37,6 +37,9 @@ JP::lexer(const char sym)
 {
     if (sym < ' ')
         return MOD_KEY;
+
+    if ((sym >= '0') && (sym <= '9'))
+        return TS_DIGIT;
 
     switch (sym)
     {
@@ -85,10 +88,23 @@ JP::parse()
                 printStack(symbol_stack);
             skiped = true;
 #endif
+//            switch (sym)
+//            {
+//            case TS_MARK:
+//                if (symbol_stack.top() == NTS_STR) {
+//                    symbol_stack.pop();
+//                    ltr++;
+//                }
+//                continue;;
+//            case ESCAPE:
+//                ltr++;
+//                continue;
+//            default: break;
+//            }
 
-            if (readingString) {
+            // если в данный момент ожидается строка
+            if (symbol_stack.top() == NTS_STR) {
                 if (sym == TS_MARK) {
-                    readingString = false;
                     symbol_stack.pop();
                     //cout << endl << "STRING END" << endl << endl;
                 }
@@ -117,47 +133,49 @@ JP::parse()
 
                 switch (ruleNum)
                 {
-                case 1: // { PAIR }
+                case 1: // [OBJ][OBJ START]
                     symbol_stack.pop();
-                    symbol_stack.push(TS_OBJ_END);
-                    symbol_stack.push(NTS_PAIR);
-                    symbol_stack.push(TS_OBJ_START);
+                    symbol_stack.push(TS_OBJ_END);   // }
+                    symbol_stack.push(NTS_PAIR);     // PAIR
+                    symbol_stack.push(TS_OBJ_START); // {
                     break;
-                case 2: // [ VALUE ]
+                case 2: // [ARR][ARR START]
                     symbol_stack.pop();
-                    symbol_stack.push(TS_ARR_END);
-                    symbol_stack.push(NTS_VALUE);
-                    symbol_stack.push(TS_ARR_START);
+                    symbol_stack.push(TS_ARR_END);   // ]
+                    symbol_stack.push(NTS_VALUE);    // VALUE
+                    symbol_stack.push(TS_ARR_START); // [
                     break;
-                case 3: // OBJ
+                case 3: // [VALUE][OBJ START]
                     symbol_stack.pop();
-                    symbol_stack.push(NTS_OBJ);
+                    symbol_stack.push(NTS_OBJ); // OBJ
                     break;
-                case 4: // ARR
+                case 4: // [VALUE][ARR START]
                     symbol_stack.pop();
-                    symbol_stack.push(NTS_ARR);
+                    symbol_stack.push(NTS_ARR); // ARR
                     break;
-                case 5: // " LTR "
-                case 6: // " LTR "
-                    ltr++;
-                    readingString = true;
-                    break;
-                case 7: // , PAIR
-                    symbol_stack.push(NTS_PAIR);
-                    symbol_stack.push(TS_NEXT);
-                    break;
-                case 8: // , VALUE
-                    //symbol_stack.pop();
-                    symbol_stack.push(NTS_VALUE);
-                    symbol_stack.push(TS_NEXT);
-                    //symbol_stack.push(TS_CHAIN);
-                    //symbol_stack.push(NTS_KEY);
-                    break;
-                case 9: // KEY : VALUE
+                case 5: // [VALUE][MARK]
+                case 6: // [KEY][MARK]
                     symbol_stack.pop();
-                    symbol_stack.push(NTS_VALUE);
-                    symbol_stack.push(TS_CHAIN);
-                    symbol_stack.push(NTS_KEY);
+                    symbol_stack.push(NTS_STR); // STR
+                    ltr++; // skip first "
+                    //symbol_stack.push(TS_MARK); // "
+                    break;
+                case 7: // [OBJ END][NEXT]
+                    symbol_stack.push(NTS_PAIR); // PAIR
+                    symbol_stack.push(TS_NEXT);  // ,
+                    break;
+                case 8: // [ARR END][NEXT]
+                    symbol_stack.push(NTS_VALUE); // VALUE
+                    symbol_stack.push(TS_NEXT);   // ,
+                    break;
+                case 9: // [PAIR][MARK]
+                    symbol_stack.pop();
+                    symbol_stack.push(NTS_VALUE); // VALUE
+                    symbol_stack.push(TS_CHAIN);  // :
+                    symbol_stack.push(NTS_KEY);   // KEY
+                    break;
+                case 10: // [VALUE][DIGIT]
+                    symbol_stack.push(NTS_NUM); // NUM
                     break;
                 default:
                     if (sym != MOD_KEY) {
@@ -248,6 +266,7 @@ Rule::getString()
     case 7: return "OBJ_END -> , PAIR";
     case 8: return "ARR_END -> , VALUE";
     case 9: return "PAIR -> KEY : VALUE";
+    case 10: return "VALUE -> NUM";
     default: return "UNKOWN PRODUCTION";
     }
 }

@@ -15,7 +15,8 @@
 using namespace std;
 
 
-class Rule {
+class Rule
+{
 public:
     Rule();
 
