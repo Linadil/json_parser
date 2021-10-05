@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "symbols.h"
+#include "jsontree.h"
 
 //#define DEBUG
 
@@ -42,6 +43,9 @@ public:
     auto parse() -> vector<Rule>;
 
 private:
+    JsonTree tree;
+
+    stack<JsonTree*> nodes;
     stack<Symbol> symbol_stack;
     map<Symbol, map<Symbol, int>> table;
 

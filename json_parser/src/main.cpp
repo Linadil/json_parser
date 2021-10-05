@@ -10,6 +10,31 @@ string sources[] = {"obj.json", "arr.json", "few.json", "deep.json"};
 
 int main(int argc, char **argv)
 {
+//    JsonTree tree;
+
+//    tree.addKey({"z", JsonValueType::OBJ});
+//    tree.getKeys()[0].addKey({"k", JsonValueType::NUM});
+//    tree.getKeys()[0].addKey({"y", JsonValueType::STR});
+
+//    tree.printTree();
+
+//    stack<string*> test;
+//    string a = "a str";
+//    string b = "b str";
+
+//    test.push(&a);
+//    test.push(&b);
+
+//    while (!test.empty()) {
+//        *test.top() = "*empty*";
+//        test.pop();
+//    }
+
+//    cout << "a: " << a << endl;
+//    cout << "b: " << b << endl;
+
+    return 0;
+
     for (string testSrc : sources) {
         //ifstream file("test_sources/" + testSrc);
         //string buf;
@@ -21,7 +46,7 @@ int main(int argc, char **argv)
             cout << rule.getString() << endl;
         }
         cout << endl;
-
+        break;
         //file.close();
     }
 

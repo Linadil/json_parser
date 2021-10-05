@@ -10,6 +10,9 @@ enum Symbol {
     NTS_KEY,      // "STR"
     NTS_STR,      //
     NTS_NUM,      //
+    //NTS_TRUE,     //
+    //NTS_FALSE,    //
+    //NTS_NULL,     //
 
     TS_OBJ_START, // {
     TS_OBJ_END,   // }
@@ -20,6 +23,22 @@ enum Symbol {
     TS_BSLASH,    // '\'
     TS_CHAIN,     // :
     TS_NEXT,      // ,
+
+    TS_T, // t
+    TS_R, // r
+    TS_U, // u
+    TS_E, // e
+
+    TS_F, // f
+    TS_A, // a
+    TS_L, // l
+    TS_S, // s
+    // E
+
+    TS_N, // n
+    // U
+    // L
+    // L
 
     TS_UNKOWN,
     TS_EOS,
