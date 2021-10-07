@@ -13,7 +13,8 @@ enum JsonValueType {
     OBJ,
     ARR,
     LITERALL,
-    NONE
+    NONE,
+    ANON
 };
 
 struct JsonKey {
@@ -27,29 +28,31 @@ class JsonTree
 public:
     JsonTree();
 
-    JsonTree(const string& key);
+    JsonTree(const JsonKey& key);
 
     virtual ~JsonTree();
 
-    auto addKey(const string& key) -> void;
+    auto addKey(const JsonKey& key) -> void;
 
     // remove a child by value, note:
     // if the node has multiple children with the same name value,
     // this will only delete the first child
-    auto removeKey(const string& key) -> void;
+    auto removeKey(const JsonKey& key) -> void;
 
-    auto setKey(const string& key) -> void;
+    auto setKey(const JsonKey& key) -> void;
 
-    auto getValue() -> string&;
+    auto getValue() -> JsonKey&;
 
     auto getKeys() -> vector<JsonTree>&;
 
+    auto findKey(const string& key) -> vector<string>;
+
     // the type has to have an overloaded
     // std::ostream << operator for print to work
-    auto printTree(const int depth = 0) -> void;
+    auto printTree(const string& key, int depth = 0) -> void;
 
 private:
-    string key;
+    JsonKey key;
 
     vector<JsonTree> children;
 };

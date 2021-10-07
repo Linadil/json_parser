@@ -28,13 +28,8 @@ JP::JsonParser(const string& path)
     table[NTS_VALUE][TS_F]         = 12; // FALSE
     table[NTS_VALUE][TS_N]         = 13; // NULL
 
-#ifdef TREE
-    //nodes.push(&tree);
-    //nodes.top()->setKey("root");
-    tree.addKey("root");
+    tree.getValue().value_type = OBJ;
     nodes.push(&tree);
-    nodes.push(&tree.getKeys().back());
-#endif
 }
 
 JP::~JsonParser()
@@ -89,96 +84,27 @@ JP::parse()
     string line;
     int ltr;
 
-#ifdef DEBUG
-    bool skiped = false;
-#endif
-
     symbol_stack.push(TS_EOS);
     symbol_stack.push(NTS_OBJ);
-    //symbol_stack.push(NTS_VALUE);
 
 
     string key;
+    JsonValueType type = NONE;
 
 
     while (!src.eof()) {
         ltr = 0;
-        //JsonKey key;
-
         getline(src, line);
 
         while (!symbol_stack.empty() && ltr < line.size()) {
             Symbol sym = lexer(line[ltr]);
-#ifdef DEBUG
-            if (!skiped)
-                printStack(symbol_stack);
-            skiped = true;
-#endif
-//            switch (sym) {
-//            case TS_OBJ_START:
-//            case TS_ARR_START:
-//                nodes.push(&nodes.top()->getKeys().back());
-//                break;
-//            case TS_OBJ_END:
-//            case TS_ARR_END:
-//                nodes.top()->addKey(key);
-//                nodes.pop();
-//                key.clear();
-//                break;
-//            default: break;
-//            }
-            //cout << "kek ";
-            if (sym != NTS_STR) {
-                switch (sym) {
-                case TS_CHAIN:
-#ifdef TREE
-                    if (!nodes.empty())
-                        nodes.push(&nodes.top()->getKeys().back());
-                    else
-                        cout << "bad push\n";
-#endif
-                    break;
-//                case TS_OBJ_START:
-//                case TS_ARR_START:
-//                    nodes.top()->addKey("");
-//                    nodes.push(&nodes.top()->getKeys().back());
-//                    break;
-                case TS_OBJ_END:
-#ifdef TREE
-                    if (!nodes.empty())
-                        nodes.pop();
-                    else
-                        cout << "!! 1 !!\n";
-#endif
-                case TS_ARR_END:
-#ifdef TREE
-                    if (!nodes.empty())
-                        nodes.pop();
-                    else
-                        cout << "!! 2 !!\n";
-#endif
-//                    if (!nodes.empty()) {
-//                        nodes.pop();
-//                        cout << "end"; }
-//                    else
-//                        cout << "!! POP !!" << endl;
-                    break;
-                default: break;
-                }
-            }
-
 
             // если в данный момент ожидается строка
             if (symbol_stack.top() == NTS_STR) {
                 switch (sym) {
                 case TS_MARK:
                     if (!escape_mark) {
-#ifdef TREE
-                        if (!nodes.empty())
-                            nodes.top()->addKey(key);
-                        else
-                            cout << "bad key save\n";
-#endif
+                        nodes.top()->addKey({key, NONE});
                         key.clear();
                         symbol_stack.pop();
                         escape_mark = false;
@@ -212,17 +138,24 @@ JP::parse()
                 case TS_OBJ_END:
                 case TS_ARR_END:
                     symbol_stack.pop();
-#ifdef TREE
-                    if (!nodes.empty())
-                        nodes.top()->addKey(key);
-                    else
-                        cout << "!! 3 !!\n";
-#endif
+                    nodes.top()->addKey({key, NONE});
+                    cout << "+number\n";
                     key.clear();
                     break;
                 default:
                     cout << "unexcepted token: " << line[ltr] << endl;
                     return rules;
+                }
+            }
+
+            if (symbol_stack.top() != NTS_NUM) {
+                switch (sym) {
+                case TS_OBJ_END:
+                case TS_ARR_END:
+                    nodes.pop();
+                    cout << "arr|obj end\n";
+                    break;
+                default: break;
                 }
             }
 
@@ -249,67 +182,96 @@ JP::parse()
                     symbol_stack.push(TS_OBJ_END);   // }
                     symbol_stack.push(NTS_PAIR);     // PAIR
                     symbol_stack.push(TS_OBJ_START); // {
-#ifdef TREE
-                    if (!nodes.empty()) {
-                        nodes.top()->addKey("");
-                        nodes.push(&nodes.top()->getKeys().back());
-                    } else {
-                        cout << "!! 4 !!\n";
-                    }
-#endif
                     break;
                 case 2: // [ARR][ARR START]
                     symbol_stack.pop();
                     symbol_stack.push(TS_ARR_END);   // ]
                     symbol_stack.push(NTS_VALUE);    // VALUE
                     symbol_stack.push(TS_ARR_START); // [
-#ifdef TREE
-                    if (!nodes.empty()) {
-                        nodes.top()->addKey("");
-                        nodes.push(&nodes.top()->getKeys().back());
-                    } else {
-                        cout << "!! 4 !!\n";
-                    }
-#endif
                     break;
                 case 3: // [VALUE][OBJ START]
+                    cout << "[VALUE][OBJ START]\n";
                     symbol_stack.pop();
                     symbol_stack.push(NTS_OBJ); // OBJ
-                    //key.value_type = JsonValueType::OBJ;
+
+                    switch (nodes.top()->getValue().value_type) {
+                    case OBJ:
+                        cout << "from OBJ:\n";
+                        nodes.push(&nodes.top()->getKeys().back());
+                        cout << "push\n";
+                        nodes.top()->getValue().value_type = OBJ;
+                        cout << "set type\n";
+                        break;
+                    case ARR:
+                        cout << "from ARR:\n";
+                        nodes.top()->addKey({"", OBJ});
+                        cout << "+obj\n";
+                        nodes.push(&nodes.top()->getKeys().back());
+                        cout << "push\n";
+                        break;
+                    default: break;
+                    }
                     break;
                 case 4: // [VALUE][ARR START]
+                    cout << "[VALUE][ARR START]\n";
                     symbol_stack.pop();
                     symbol_stack.push(NTS_ARR); // ARR
-                    //key.value_type = JsonValueType::ARR;
+
+                    switch (nodes.top()->getValue().value_type) {
+                    case OBJ:
+                        cout << "from OBJ:\n";
+                        nodes.push(&nodes.top()->getKeys().back());
+                        cout << "push\n";
+                        nodes.top()->getValue().value_type = ARR;
+                        cout << "set type\n";
+                        break;
+                    case ARR:
+                        cout << "from ARR:\n";
+                        nodes.top()->addKey({"", ARR});
+                        cout << "set type\n";
+                        nodes.push(&nodes.top()->getKeys().back());
+                        cout << "push\n";
+                        break;
+                    default: break;
+                    }
                     break;
                 case 5: // [VALUE][MARK]
-#ifdef TREE
-                    if (!nodes.empty())
-                        nodes.push(&nodes.top()->getKeys().back());  //// ????
-                    else
-                        cout << "bad push 1\n";
-#endif
+                    cout << "[VALUE][MARK]\n";
+                    switch (nodes.top()->getValue().value_type) {
+                    case OBJ:
+                        cout << "from OBJ:\n";
+                        nodes.push(&nodes.top()->getKeys().back());
+                        cout << "push\n";
+                        nodes.top()->getValue().value_type = STR;
+                        cout << "set type string\n";
+                        break;
+                    case ARR:
+                        cout << "from ARR\n";
+                        nodes.top()->addKey({"", STR});
+                        cout << "+string\n";
+                        nodes.push(&nodes.top()->getKeys().back());
+                        cout << "push\n";
+                        break;
+                    default: break;
+                    }
                 case 6: // [KEY][MARK]
                     symbol_stack.pop();
                     symbol_stack.push(NTS_STR); // STR
                     ltr++; // skip first "
                     break;
                 case 7: // [OBJ END][NEXT]
+                    cout << "[OBJ END][NEXT]\n";
                     symbol_stack.push(NTS_PAIR); // PAIR
                     symbol_stack.push(TS_NEXT);  // ,
-#ifdef TREE
-                    if (!nodes.empty()) {
-                        nodes.pop();
-                        cout << "next\n"; }
-                    else
-                        cout << "DANGEROUS POP!!" << endl;
-#endif
+                    nodes.pop();
+                    cout << "pop\n";
                     break;
                 case 8: // [ARR END][NEXT]
+                    cout << "[ARR END][NEXT]\n";
                     symbol_stack.push(NTS_VALUE); // VALUE
                     symbol_stack.push(TS_NEXT);   // ,
-//                    nodes.top()->addKey(key);
-//                    key.clear();
+                    nodes.pop();
+                    cout << "pop\n";
                     break;
                 case 9: // [PAIR][MARK]
                     symbol_stack.pop();
@@ -318,8 +280,27 @@ JP::parse()
                     symbol_stack.push(NTS_KEY);   // KEY
                     break;
                 case 10: // [VALUE][DIGIT]
+                    cout << "[VALUE][DIGIT]\n";
                     symbol_stack.pop();
                     symbol_stack.push(NTS_NUM); // NUM
+
+                    switch (nodes.top()->getValue().value_type) {
+                    case OBJ:
+                        cout << "from OBJ:\n";
+                        nodes.push(&nodes.top()->getKeys().back());
+                        cout << "push\n";
+                        nodes.top()->getValue().value_type = NUM;
+                        cout << "set type num\n";
+                        break;
+                    case ARR:
+                        cout << "from ARR:\n";
+                        nodes.top()->addKey({"", NUM});
+                        cout << "+number\n";
+                        nodes.push(&nodes.top()->getKeys().back());
+                        cout << "push\n";
+                        break;
+                    default: break;
+                    }
 #ifdef TREE
                     if (!nodes.empty())
                         nodes.push(&nodes.top()->getKeys().back());  //// ????
@@ -333,7 +314,20 @@ JP::parse()
                     symbol_stack.push(TS_U);
                     symbol_stack.push(TS_R);
                     symbol_stack.push(TS_T);
-                    //key.value_type = JsonValueType::LITERALL;
+
+                    switch (nodes.top()->getValue().value_type) {
+                    case OBJ:
+                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.top()->getValue().value_type = LITERALL;
+                        break;
+                    case ARR:
+                        nodes.top()->addKey({"", LITERALL});
+                        nodes.push(&nodes.top()->getKeys().back());
+                        break;
+                    default: break;
+                    }
+
+                    nodes.top()->addKey({"true", NONE});
                     break;
                 case 12: // [VALUE][FALSE]
                     symbol_stack.pop();
@@ -342,7 +336,20 @@ JP::parse()
                     symbol_stack.push(TS_L);
                     symbol_stack.push(TS_A);
                     symbol_stack.push(TS_F);
-                    //key.value_type = JsonValueType::LITERALL;
+
+                    switch (nodes.top()->getValue().value_type) {
+                    case OBJ:
+                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.top()->getValue().value_type = LITERALL;
+                        break;
+                    case ARR:
+                        nodes.top()->addKey({"", LITERALL});
+                        nodes.push(&nodes.top()->getKeys().back());
+                        break;
+                    default: break;
+                    }
+
+                    nodes.top()->addKey({"false", NONE});
                     break;
                 case 13: // [VALUE][NULL]
                     symbol_stack.pop();
@@ -350,7 +357,20 @@ JP::parse()
                     symbol_stack.push(TS_L);
                     symbol_stack.push(TS_U);
                     symbol_stack.push(TS_N);
-                    //key.value_type = JsonValueType::LITERALL;
+
+                    switch (nodes.top()->getValue().value_type) {
+                    case OBJ:
+                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.top()->getValue().value_type = LITERALL;
+                        break;
+                    case ARR:
+                        nodes.top()->addKey({"", LITERALL});
+                        nodes.push(&nodes.top()->getKeys().back());
+                        break;
+                    default: break;
+                    }
+
+                    nodes.top()->addKey({"null", NONE});
                     break;
                 default:
                     if (sym != MOD_KEY) {
@@ -373,59 +393,8 @@ JP::parse()
 void
 JP::printJson()
 {
-    tree.printTree();
+    tree.printTree("underRoot2");
 }
-
-
-#ifdef DEBUG
-
-void
-JP::printStack(stack<Symbol> stack)
-{
-    cout << "stack at the moment:" << endl;
-    while (!stack.empty()) {
-        switch (stack.top()) {
-        case NTS_OBJ: cout << "NTS_OBJ "; break;
-        case NTS_ARR: cout << "NTS_ARR "; break;
-        case NTS_VALUE: cout << "NTS_VALUE "; break;
-        case NTS_PAIR: cout << "NTS_PAIR "; break;
-        case NTS_KEY: cout << "NTS_KEY "; break;
-        case NTS_STR: cout << "NTS_STR "; break;
-        case NTS_NUM: cout << "NTS_NUM "; break;
-
-        case TS_OBJ_START: cout << "TS_OBJ_START "; break;
-        case TS_OBJ_END: cout << "TS_OBJ_END "; break;
-        case TS_ARR_START: cout << "TS_ARR_START "; break;
-        case TS_ARR_END: cout << "TS_ARR_END "; break;
-        case TS_MARK: cout << "TS_MARK "; break;
-        case TS_BSLASH: cout << "TS_BSLASH "; break;
-        case TS_CHAIN: cout << "TS_CHAIN "; break;
-        case TS_NEXT: cout << "TS_NEXT "; break;
-        case TS_DIGIT: cout << "TS_DIGIT "; break;
-
-        case TS_T: cout << "TS_T "; break;
-        case TS_R: cout << "TS_A "; break;
-        case TS_U: cout << "TS_U "; break;
-        case TS_E: cout << "TS_E "; break;
-        case TS_F: cout << "TS_F "; break;
-        case TS_A: cout << "TS_A "; break;
-        case TS_L: cout << "TS_L "; break;
-        case TS_S: cout << "TS_S "; break;
-        case TS_N: cout << "TS_N "; break;
-
-        case TS_UNKOWN: cout << "TS_UNKOWN "; break;
-        case TS_EOS: cout << "TS_EOS "; break;
-
-        case ESCAPE: cout << "ESCAPE "; break;
-        case MOD_KEY: cout << "MOD_KEY "; break;
-        }
-
-        stack.pop();
-    }
-    cout << endl << "###########################################" << endl;
-}
-
-#endif
 
 
 Rule::Rule()
@@ -433,16 +402,19 @@ Rule::Rule()
 
 }
 
+
 Rule::Rule(int ruleNum)
 {
     num = ruleNum;
 }
+
 
 int
 Rule::getNum()
 {
     return num;
 }
+
 
 string
 Rule::getString()
