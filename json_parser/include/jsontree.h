@@ -27,20 +27,20 @@ class JsonTree
 public:
     JsonTree();
 
-    JsonTree(const JsonKey& key);
+    JsonTree(const string& key);
 
     virtual ~JsonTree();
 
-    auto addKey(const JsonKey& key) -> void;
+    auto addKey(const string& key) -> void;
 
     // remove a child by value, note:
     // if the node has multiple children with the same name value,
     // this will only delete the first child
-    auto removeKey(const JsonKey& key) -> void;
+    auto removeKey(const string& key) -> void;
 
-    auto setKey(const JsonKey& key) -> void;
+    auto setKey(const string& key) -> void;
 
-    auto getValue() -> JsonKey&;
+    auto getValue() -> string&;
 
     auto getKeys() -> vector<JsonTree>&;
 
@@ -49,7 +49,7 @@ public:
     auto printTree(const int depth = 0) -> void;
 
 private:
-    JsonKey key;
+    string key;
 
     vector<JsonTree> children;
 };

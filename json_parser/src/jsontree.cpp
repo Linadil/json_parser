@@ -9,7 +9,7 @@ JT::JsonTree()
 }
 
 
-JT::JsonTree(const JsonKey& key)
+JT::JsonTree(const string& key)
 {
     this->key = key;
 }
@@ -22,17 +22,17 @@ JT::~JsonTree()
 
 
 void
-JT::addKey(const JsonKey& key)
+JT::addKey(const string& key)
 {
     this->children.push_back(JsonTree(key));
 }
 
 
 void
-JT::removeKey(const JsonKey& key)
+JT::removeKey(const string& key)
 {
     for (uint i = 0; i < this->children.size(); i++) {
-        if (this->children.at(i).key.name == key.name) {
+        if (this->children.at(i).key == key) {
             this->children.erase(this->children.begin() + i);
             return;
         }
@@ -41,13 +41,13 @@ JT::removeKey(const JsonKey& key)
 
 
 void
-JT::setKey(const JsonKey& key)
+JT::setKey(const string& key)
 {
     this->key = key;
 }
 
 
-JsonKey&
+string&
 JT::getValue()
 {
     return this->key;
@@ -73,7 +73,7 @@ JT::printTree(const int depth)
             cout << "|-- ";
     }
 
-    cout << this->key.name << endl;
+    cout << this->key << endl;
 
     for (uint i = 0; i < this->children.size(); i++) {
         this->children.at(i).printTree(depth + 1);

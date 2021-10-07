@@ -41,6 +41,7 @@ public:
     ~JsonParser();
 
     auto parse() -> vector<Rule>;
+    auto printJson() -> void;
 
 private:
     JsonTree tree;

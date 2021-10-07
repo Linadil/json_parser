@@ -5,7 +5,7 @@
 
 using namespace std;
 
-string sources[] = {"obj.json", "arr.json", "few.json", "deep.json"};
+string sources[] = {"some.json", "obj.json", "arr.json", "few.json", "deep.json"};
 
 
 int main(int argc, char **argv)
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 //    cout << "a: " << a << endl;
 //    cout << "b: " << b << endl;
 
-    return 0;
+//    return 0;
 
     for (string testSrc : sources) {
         //ifstream file("test_sources/" + testSrc);
@@ -46,8 +46,10 @@ int main(int argc, char **argv)
             cout << rule.getString() << endl;
         }
         cout << endl;
-        break;
         //file.close();
+
+        parser.printJson();
+        break;
     }
 
 
