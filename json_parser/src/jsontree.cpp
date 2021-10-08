@@ -3,22 +3,14 @@
 typedef JsonTree JT;
 
 
-JT::JsonTree()
-{
-
-}
+JT::JsonTree() {}
 
 
 JT::JsonTree(const JsonItem& item)
-{
-    this->item = item;
-}
+{ this->item = item; }
 
 
-JT::~JsonTree()
-{
-
-}
+JT::~JsonTree() {}
 
 
 void
@@ -27,26 +19,7 @@ JT::addItem(const JsonItem& item)
     JsonTree child(item);
     child.parent = this;
 
-    this->items.push_back(JsonTree(item));
-}
-
-
-void
-JT::removeItem(const JsonItem& item)
-{
-    for (uint i = 0; i < this->items.size(); i++) {
-        if (this->items.at(i).item.name == item.name) {
-            this->items.erase(this->items.begin() + i);
-            return;
-        }
-    }
-}
-
-
-void
-JT::setItem(const JsonItem& item)
-{
-    this->item = item;
+    this->items.push_back(child);
 }
 
 
@@ -68,12 +41,14 @@ string
 JT::extractPath()
 {
     string path;
+    JsonTree *cur;
     stack<string> parts;
 
-    for (JsonTree *cur = this; cur->parent != NULL; cur = this->parent)
+    for (cur = this; cur->parent != NULL; cur = cur->parent)
         parts.push(cur->item.name);
 
     while (!parts.empty()) {
+        //out << "top: " << parts.top() << endl;
         path += "/" + parts.top();
         parts.pop();
     }

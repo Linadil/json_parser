@@ -3,7 +3,6 @@
 typedef JsonParser JP;
 
 
-
 JP::JsonParser(const string& path)
 {
     src.open(path);
@@ -127,6 +126,7 @@ JP::parse()
             }
 
 
+            // если в данный момент ожидается число
             if (symbol_stack.top() == NTS_NUM) {
                 switch (sym) {
                 case TS_DIGIT:
@@ -142,7 +142,6 @@ JP::parse()
                         .key_type = NUM,
                         .value_type = NONE
                     });
-                    cout << "+number\n";
                     key.clear();
                     break;
                 default:
@@ -156,7 +155,6 @@ JP::parse()
                 case TS_OBJ_END:
                 case TS_ARR_END:
                     nodes.pop();
-                    cout << "arr|obj end\n";
                     break;
                 default: break;
                 }
@@ -193,79 +191,58 @@ JP::parse()
                     symbol_stack.push(TS_ARR_START); // [
                     break;
                 case 3: // [VALUE][OBJ START]
-                    cout << "[VALUE][OBJ START]\n";
                     symbol_stack.pop();
                     symbol_stack.push(NTS_OBJ); // OBJ
 
                     switch (nodes.top()->getItem().value_type) {
                     case OBJ:
-                        cout << "from OBJ:\n";
                         nodes.push(&nodes.top()->getItems().back());
-                        cout << "push\n";
                         nodes.top()->getItem().value_type = OBJ;
-                        cout << "set type\n";
                         break;
                     case ARR:
-                        cout << "from ARR:\n";
                         nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = OBJ
                         });
-                        cout << "+obj\n";
                         nodes.push(&nodes.top()->getItems().back());
-                        cout << "push\n";
                         break;
                     default: break;
                     }
                     break;
                 case 4: // [VALUE][ARR START]
-                    cout << "[VALUE][ARR START]\n";
                     symbol_stack.pop();
                     symbol_stack.push(NTS_ARR); // ARR
 
                     switch (nodes.top()->getItem().value_type) {
                     case OBJ:
-                        cout << "from OBJ:\n";
                         nodes.push(&nodes.top()->getItems().back());
-                        cout << "push\n";
                         nodes.top()->getItem().value_type = ARR;
-                        cout << "set type\n";
                         break;
                     case ARR:
-                        cout << "from ARR:\n";
                         nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = ARR
                         });
-                        cout << "set type\n";
                         nodes.push(&nodes.top()->getItems().back());
-                        cout << "push\n";
                         break;
                     default: break;
                     }
                     break;
                 case 5: // [VALUE][MARK]
-                    cout << "[VALUE][MARK]\n";
                     switch (nodes.top()->getItem().value_type) {
                     case OBJ:
-                        cout << "from OBJ:\n";
                         nodes.push(&nodes.top()->getItems().back());
-                        cout << "push\n";
                         nodes.top()->getItem().value_type = STR;
-                        cout << "set type string\n";
                         break;
                     case ARR:
-                        cout << "from ARR\n";
                         nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = STR
                         });
-                        cout << "+string\n";
                         nodes.push(&nodes.top()->getItems().back());
-                        cout << "push\n";
                         break;
                     default: break;
                     }
@@ -275,18 +252,14 @@ JP::parse()
                     ltr++; // skip first "
                     break;
                 case 7: // [OBJ END][NEXT]
-                    cout << "[OBJ END][NEXT]\n";
                     symbol_stack.push(NTS_PAIR); // PAIR
                     symbol_stack.push(TS_NEXT);  // ,
                     nodes.pop();
-                    cout << "pop\n";
                     break;
                 case 8: // [ARR END][NEXT]
-                    cout << "[ARR END][NEXT]\n";
                     symbol_stack.push(NTS_VALUE); // VALUE
                     symbol_stack.push(TS_NEXT);   // ,
                     nodes.pop();
-                    cout << "pop\n";
                     break;
                 case 9: // [PAIR][MARK]
                     symbol_stack.pop();
@@ -295,28 +268,21 @@ JP::parse()
                     symbol_stack.push(NTS_KEY);   // KEY
                     break;
                 case 10: // [VALUE][DIGIT]
-                    cout << "[VALUE][DIGIT]\n";
                     symbol_stack.pop();
                     symbol_stack.push(NTS_NUM); // NUM
 
                     switch (nodes.top()->getItem().value_type) {
                     case OBJ:
-                        cout << "from OBJ:\n";
                         nodes.push(&nodes.top()->getItems().back());
-                        cout << "push\n";
                         nodes.top()->getItem().value_type = NUM;
-                        cout << "set type num\n";
                         break;
                     case ARR:
-                        cout << "from ARR:\n";
                         nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = NUM
                         });
-                        cout << "+number\n";
                         nodes.push(&nodes.top()->getItems().back());
-                        cout << "push\n";
                         break;
                     default: break;
                     }
@@ -426,13 +392,6 @@ JP::parse()
 Rule::Rule(int ruleNum)
 {
     num = ruleNum;
-}
-
-
-int
-Rule::getNum()
-{
-    return num;
 }
 
 

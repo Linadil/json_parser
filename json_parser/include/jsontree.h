@@ -7,7 +7,9 @@
 #include <map>
 #include <stack>
 
+
 using namespace std;
+
 
 enum JsonItemType {
     NUM,
@@ -37,10 +39,6 @@ public:
 
     auto addItem(const JsonItem& key) -> void;
 
-    auto removeItem(const JsonItem& key) -> void;
-
-    auto setItem(const JsonItem& key) -> void;
-
     auto getItem() -> JsonItem&;
 
     auto getItems() -> vector<JsonTree>&;
@@ -55,7 +53,7 @@ public:
 
 private:
     JsonItem item;
-    JsonTree *parent;
+    JsonTree *parent = NULL;
 
 
     vector<JsonTree> items;

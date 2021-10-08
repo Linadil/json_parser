@@ -37,8 +37,12 @@ main(int argc, char **argv)
     vector<JsonTree*> matches = parser.tree.findAllItems(key);
 
     for (const auto& match : matches) {
-        cout << '"' << match->extractPath() << "\":\n";
+        cout << endl;
+
+        cout <<'"' << match->extractPath() << "\":" << endl;
         match->printTree();
+
+        cout << endl;
     }
 
     return 0;

@@ -1,4 +1,3 @@
-test_sources/*
 build*/*
 
 CMakeLists.txt.user

@@ -20,7 +20,6 @@ class Rule
 public:
     Rule(int ruleNum);
 
-    auto getNum() -> int;
     auto getString() -> string;
 
 private:
