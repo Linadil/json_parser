@@ -65,12 +65,12 @@ JT::getKeys()
 
 
 string
-JT::extractPath(JsonTree& node)
+JT::extractPath()
 {
     string path;
     stack<string> parts;
 
-    for (JsonTree *cur = &node; cur->parent != NULL; cur = cur->parent)
+    for (JsonTree *cur = this; cur->parent != NULL; cur = this->parent)
         parts.push(cur->key.name);
 
     while (!parts.empty()) {
@@ -82,8 +82,34 @@ JT::extractPath(JsonTree& node)
 }
 
 
+vector<JsonTree*>
+JT::findAllKeys(const string& key)
+{
+    static vector<JsonTree*> matches;
 
-vector<JsonTree*>*
+    for (auto& node : this->children) {
+        if (node.key.name == key)
+            matches.push_back(&node);
+
+        node.findAllKeys(key);
+    }
+
+//    JsonTree *match;
+
+//    for (auto& node : this->children) {
+//        match = node.findKey(key);
+
+//        while (match != NULL) {
+//            matches.push_back(match);
+
+//        }
+//    }
+
+    return matches;
+}
+
+
+JsonTree*
 JT::findKey(const string& key)
 {
     static vector<JsonTree*> nodes;
@@ -92,7 +118,7 @@ JT::findKey(const string& key)
         nodes.push_back(&node);
 
         if (node.key.name == key)
-            return &nodes;
+            return nodes.back();
 
         if (node.findKey(key) == NULL)
             nodes.pop_back();

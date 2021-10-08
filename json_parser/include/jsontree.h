@@ -55,9 +55,9 @@ public:
 
     auto getKeys() -> vector<JsonTree>&;
 
-    auto extractPath(JsonTree& node) -> string;
-    auto findAllKeys(const string& key) -> void;
-    auto findKey(const string& key) -> vector<JsonTree*>*;
+    auto extractPath() -> string;
+    auto findAllKeys(const string& key) -> vector<JsonTree*>;
+    auto findKey(const string& key) -> JsonTree*;
     //auto findKey(vector<JsonTree*>& nodes, const string& key) -> bool;//vector<JsonTree*>*;
 
     // the type has to have an overloaded

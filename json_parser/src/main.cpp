@@ -30,17 +30,31 @@ int main(int argc, char **argv)
 //        }
 
 
-        vector<JsonTree*> *match = parser.tree.findKey("underRoot2");
-        string path;
+        //JsonTree *match = parser.tree.findKey("underRoot2");
+        vector<JsonTree*> matches = parser.tree.findAllKeys("underRoot2");
 
-        JsonTree *jt = match->back();
-        for (const auto& node : *match) {
-            if (!node->getValue().name.empty())
-                path += node->getValue().name;
+        for (const auto& match : matches) {
+            cout << '"' << match->extractPath() << "\":\n";
+            match->printTree();
         }
 
-        cout << '"' << path << "\":\n" << endl;
-        jt->printTree();
+
+//        if (match == NULL) {
+//            cout << "0 matches found\n";
+//            return 0;
+//        }
+//        string path;
+
+//        JsonTree *jt = match->back();
+//        for (const auto& node : *match) {
+//            if (!node->getValue().name.empty())
+//                path += node->getValue().name;
+//        }
+//        string path = match->extractPath(*match);
+
+//        cout << '"' << path << "\":\n" << endl;
+//        match->printTree();
+        //jt->printTree();
 
         //delete match;
 
