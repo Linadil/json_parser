@@ -89,7 +89,7 @@ JP::parse()
 
 
     string key;
-    JsonValueType type = NONE;
+    JsonItemType type = NONE;
 
 
     while (!src.eof()) {
@@ -104,7 +104,11 @@ JP::parse()
                 switch (sym) {
                 case TS_MARK:
                     if (!escape_mark) {
-                        nodes.top()->addKey({key, NONE});
+                        nodes.top()->addKey({
+                            .name = key,
+                            .key_type = STR,
+                            .value_type = NONE
+                        });
                         key.clear();
                         symbol_stack.pop();
                         escape_mark = false;
@@ -138,7 +142,11 @@ JP::parse()
                 case TS_OBJ_END:
                 case TS_ARR_END:
                     symbol_stack.pop();
-                    nodes.top()->addKey({key, NONE});
+                    nodes.top()->addKey({
+                        .name = key,
+                        .key_type = NUM,
+                        .value_type = NONE
+                    });
                     cout << "+number\n";
                     key.clear();
                     break;
@@ -204,7 +212,11 @@ JP::parse()
                         break;
                     case ARR:
                         cout << "from ARR:\n";
-                        nodes.top()->addKey({"", OBJ});
+                        nodes.top()->addKey({
+                            .name = "",
+                            .key_type = ARR,
+                            .value_type = OBJ
+                        });
                         cout << "+obj\n";
                         nodes.push(&nodes.top()->getKeys().back());
                         cout << "push\n";
@@ -227,7 +239,11 @@ JP::parse()
                         break;
                     case ARR:
                         cout << "from ARR:\n";
-                        nodes.top()->addKey({"", ARR});
+                        nodes.top()->addKey({
+                            .name = "",
+                            .key_type = ARR,
+                            .value_type = ARR
+                        });
                         cout << "set type\n";
                         nodes.push(&nodes.top()->getKeys().back());
                         cout << "push\n";
@@ -247,7 +263,11 @@ JP::parse()
                         break;
                     case ARR:
                         cout << "from ARR\n";
-                        nodes.top()->addKey({"", STR});
+                        nodes.top()->addKey({
+                            .name = "",
+                            .key_type = ARR,
+                            .value_type = STR
+                        });
                         cout << "+string\n";
                         nodes.push(&nodes.top()->getKeys().back());
                         cout << "push\n";
@@ -294,19 +314,17 @@ JP::parse()
                         break;
                     case ARR:
                         cout << "from ARR:\n";
-                        nodes.top()->addKey({"", NUM});
+                        nodes.top()->addKey({
+                            .name = "",
+                            .key_type = ARR,
+                            .value_type = NUM
+                        });
                         cout << "+number\n";
                         nodes.push(&nodes.top()->getKeys().back());
                         cout << "push\n";
                         break;
                     default: break;
                     }
-#ifdef TREE
-                    if (!nodes.empty())
-                        nodes.push(&nodes.top()->getKeys().back());  //// ????
-                    else
-                        cout << "bad push 1\n";
-#endif
                     break;
                 case 11: // [VALUE][TRUE]
                     symbol_stack.pop();
@@ -318,16 +336,24 @@ JP::parse()
                     switch (nodes.top()->getValue().value_type) {
                     case OBJ:
                         nodes.push(&nodes.top()->getKeys().back());
-                        nodes.top()->getValue().value_type = LITERALL;
+                        nodes.top()->getValue().value_type = BOOL;
                         break;
                     case ARR:
-                        nodes.top()->addKey({"", LITERALL});
+                        nodes.top()->addKey({
+                            .name = "",
+                            .key_type = ARR,
+                            .value_type = BOOL
+                        });
                         nodes.push(&nodes.top()->getKeys().back());
                         break;
                     default: break;
                     }
 
-                    nodes.top()->addKey({"true", NONE});
+                    nodes.top()->addKey({
+                        .name = "true",
+                        .key_type = BOOL,
+                        .value_type = NONE
+                    });
                     break;
                 case 12: // [VALUE][FALSE]
                     symbol_stack.pop();
@@ -340,16 +366,24 @@ JP::parse()
                     switch (nodes.top()->getValue().value_type) {
                     case OBJ:
                         nodes.push(&nodes.top()->getKeys().back());
-                        nodes.top()->getValue().value_type = LITERALL;
+                        nodes.top()->getValue().value_type = BOOL;
                         break;
                     case ARR:
-                        nodes.top()->addKey({"", LITERALL});
+                        nodes.top()->addKey({
+                            .name = "",
+                            .key_type = ARR,
+                            .value_type = BOOL
+                        });
                         nodes.push(&nodes.top()->getKeys().back());
                         break;
                     default: break;
                     }
 
-                    nodes.top()->addKey({"false", NONE});
+                    nodes.top()->addKey({
+                        .name = "false",
+                        .key_type = BOOL,
+                        .value_type = NONE
+                    });
                     break;
                 case 13: // [VALUE][NULL]
                     symbol_stack.pop();
@@ -361,16 +395,24 @@ JP::parse()
                     switch (nodes.top()->getValue().value_type) {
                     case OBJ:
                         nodes.push(&nodes.top()->getKeys().back());
-                        nodes.top()->getValue().value_type = LITERALL;
+                        nodes.top()->getValue().value_type = _NULL;
                         break;
                     case ARR:
-                        nodes.top()->addKey({"", LITERALL});
+                        nodes.top()->addKey({
+                            .name = "",
+                            .key_type = ARR,
+                            .value_type = _NULL
+                        });
                         nodes.push(&nodes.top()->getKeys().back());
                         break;
                     default: break;
                     }
 
-                    nodes.top()->addKey({"null", NONE});
+                    nodes.top()->addKey({
+                        .name = "null",
+                        .key_type = _NULL,
+                        .value_type = NONE
+                    });
                     break;
                 default:
                     if (sym != MOD_KEY) {
@@ -379,10 +421,6 @@ JP::parse()
                     }
                 }
             }
-
-#ifdef DEBUG
-            skiped = false;
-#endif
         }
     }
 
@@ -393,7 +431,11 @@ JP::parse()
 void
 JP::printJson()
 {
-    tree.printTree("underRoot2");
+    //vector<Match> v;
+    tree.printTree();
+    //cout << "found " << v.size() << " matches" << endl;
+//    for (const auto& [key, value] : m)
+//        cout << key << ": " << value << endl;
 }
 
 

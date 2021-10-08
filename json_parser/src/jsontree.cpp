@@ -9,7 +9,7 @@ JT::JsonTree()
 }
 
 
-JT::JsonTree(const JsonKey& key)
+JT::JsonTree(const JsonItem& key)
 {
     this->key = key;
 }
@@ -22,14 +22,17 @@ JT::~JsonTree()
 
 
 void
-JT::addKey(const JsonKey& key)
+JT::addKey(const JsonItem& key)
 {
+    JsonTree child(key);
+    child.parent = this;
+
     this->children.push_back(JsonTree(key));
 }
 
 
 void
-JT::removeKey(const JsonKey& key)
+JT::removeKey(const JsonItem& key)
 {
     for (uint i = 0; i < this->children.size(); i++) {
         if (this->children.at(i).key.name == key.name) {
@@ -41,13 +44,13 @@ JT::removeKey(const JsonKey& key)
 
 
 void
-JT::setKey(const JsonKey& key)
+JT::setKey(const JsonItem& key)
 {
     this->key = key;
 }
 
 
-JsonKey&
+JsonItem&
 JT::getValue()
 {
     return this->key;
@@ -61,70 +64,108 @@ JT::getKeys()
 }
 
 
-vector<string>
+string
+JT::extractPath(JsonTree& node)
+{
+    string path;
+    stack<string> parts;
+
+    for (JsonTree *cur = &node; cur->parent != NULL; cur = cur->parent)
+        parts.push(cur->key.name);
+
+    while (!parts.empty()) {
+        path += "/" + parts.top();
+        parts.pop();
+    }
+
+    return path;
+}
+
+
+
+vector<JsonTree*>*
 JT::findKey(const string& key)
 {
-    vector<string> matches;
+    static vector<JsonTree*> nodes;
 
+    for (auto& node : this->children) {
+        nodes.push_back(&node);
 
+        if (node.key.name == key)
+            return &nodes;
 
-    return matches;
+        if (node.findKey(key) == NULL)
+            nodes.pop_back();
+    }
+
+    return NULL;
 }
+
+
+//bool
+//JT::findKey(vector<JsonTree*>& nodes, const string& key)
+//{
+//    //static vector<JsonTree*> nodes;
+
+//    for (auto& node : this->children) {
+//        nodes.push_back(&node);
+
+//        if (node.key.name == key) {
+//            //return nodes;
+//            return true;
+//        }
+
+//        if (!node.findKey(nodes, key))
+//            nodes.pop_back();
+//    }
+
+//    return false;//NULL;
+//}
 
 
 // the type has to have an overloaded
 // std::ostream << operator for print to work
 void
-JT::printTree(const string& key, int depth)
+JT::printTree(int depth)
 {
-//    static string path;
-//    static bool found = false;
+    for (int i = 0; i < depth; i++)
+        cout << (i != depth - 1 ? "    " : "|... ");
 
-    for (int i = 0; i < depth; i++) {
-        if (i != depth - 1)
-            cout << "    ";
+
+    if (!this->key.name.empty()) {
+        if (this->key.key_type == STR)
+            cout << '"' << this->key.name << "\" ";
         else
-            cout << "|-- ";
+            cout << this->key.name + ' ';
     }
 
-    cout << this->key.name;
+
     switch (this->key.value_type) {
     case OBJ:
-        cout << " (obj)\n";
+        cout << "(object)\n";
         break;
     case ARR:
-        cout << " (arr)\n";
+        cout << "(array)\n";
         break;
     case NUM:
-        cout << " (num)\n";
+        cout << "(number)\n";
         break;
     case STR:
-        cout << " (str)\n";
+        cout << "(string)\n";
         break;
-    case LITERALL:
-        cout << " (liter)\n";
+    case BOOL:
+        cout << "(boolean)\n";
+        break;
+    case _NULL:
+        cout << "(null)\n";
         break;
     case NONE:
-        cout << " (none)\n";
+        cout << endl;
         break;
+    default: break;
     }
 
-//    if (this->key.value_type == NONE)
-//        path.clear();
 
-//    if (found)
-//        cout << this->key.name << endl;
-
-//    if (!this->key.name.empty()) {
-//        path += "/" + this->key.name;
-//    }
-
-//    if (this->key.name == key) {
-//        found = true;
-//        cout << path << ": ";
-//    }
-
-    for (uint i = 0; i < this->children.size(); i++) {
-        this->children.at(i).printTree(key, depth + 1);
-    }
+    for (uint i = 0; i < this->children.size(); i++)
+        this->children.at(i).printTree(depth + 1);
 }

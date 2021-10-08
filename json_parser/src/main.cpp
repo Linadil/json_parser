@@ -18,8 +18,33 @@ int main(int argc, char **argv)
             //cout << rule.getString() << endl;
             cout << "";
         }
+        //parser.printJson();
         cout << endl << endl;;
-        parser.printJson();
+
+
+
+//        map<string, JsonTree*> *matches = parser.tree.findKey("underRoot2");
+//        for (auto& [path, node] : *matches) {
+//            cout << '"' << path << "\":\n";
+//            node->printTree();
+//        }
+
+
+        vector<JsonTree*> *match = parser.tree.findKey("underRoot2");
+        string path;
+
+        JsonTree *jt = match->back();
+        for (const auto& node : *match) {
+            if (!node->getValue().name.empty())
+                path += node->getValue().name;
+        }
+
+        cout << '"' << path << "\":\n" << endl;
+        jt->printTree();
+
+        //delete match;
+
+
         break;
     }
 

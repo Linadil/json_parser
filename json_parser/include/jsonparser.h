@@ -43,8 +43,10 @@ public:
     auto parse() -> vector<Rule>;
     auto printJson() -> void;
 
-private:
+
     JsonTree tree;
+
+private:
 
     stack<JsonTree*> nodes;
     stack<Symbol> symbol_stack;
