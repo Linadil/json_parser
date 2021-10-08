@@ -19,11 +19,6 @@ enum JsonItemType {
     NONE,
 };
 
-struct Match {
-    string path;
-    int depth;
-};
-
 struct JsonItem {
     string name;
     JsonItemType key_type;
@@ -34,42 +29,36 @@ struct JsonItem {
 class JsonTree
 {
 public:
-//    static vector<pair<string, string>> matches;
-
     JsonTree();
 
     JsonTree(const JsonItem& key);
 
     virtual ~JsonTree();
 
-    auto addKey(const JsonItem& key) -> void;
+    auto addItem(const JsonItem& key) -> void;
 
-    // remove a child by value, note:
-    // if the node has multiple children with the same name value,
-    // this will only delete the first child
-    auto removeKey(const JsonItem& key) -> void;
+    auto removeItem(const JsonItem& key) -> void;
 
-    auto setKey(const JsonItem& key) -> void;
+    auto setItem(const JsonItem& key) -> void;
 
-    auto getValue() -> JsonItem&;
+    auto getItem() -> JsonItem&;
 
-    auto getKeys() -> vector<JsonTree>&;
+    auto getItems() -> vector<JsonTree>&;
 
     auto extractPath() -> string;
-    auto findAllKeys(const string& key) -> vector<JsonTree*>;
-    auto findKey(const string& key) -> JsonTree*;
-    //auto findKey(vector<JsonTree*>& nodes, const string& key) -> bool;//vector<JsonTree*>*;
 
-    // the type has to have an overloaded
-    // std::ostream << operator for print to work
+    auto findAllItems(const string& key) -> vector<JsonTree*>;
+
+    auto findItem(const string& key) -> JsonTree*;
+
     auto printTree(int depth = 0) -> void;
 
 private:
-    JsonItem key;
+    JsonItem item;
     JsonTree *parent;
 
 
-    vector<JsonTree> children;
+    vector<JsonTree> items;
 };
 
 #endif // JSONTREE_H

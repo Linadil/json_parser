@@ -9,9 +9,9 @@ JT::JsonTree()
 }
 
 
-JT::JsonTree(const JsonItem& key)
+JT::JsonTree(const JsonItem& item)
 {
-    this->key = key;
+    this->item = item;
 }
 
 
@@ -22,21 +22,21 @@ JT::~JsonTree()
 
 
 void
-JT::addKey(const JsonItem& key)
+JT::addItem(const JsonItem& item)
 {
-    JsonTree child(key);
+    JsonTree child(item);
     child.parent = this;
 
-    this->children.push_back(JsonTree(key));
+    this->items.push_back(JsonTree(item));
 }
 
 
 void
-JT::removeKey(const JsonItem& key)
+JT::removeItem(const JsonItem& item)
 {
-    for (uint i = 0; i < this->children.size(); i++) {
-        if (this->children.at(i).key.name == key.name) {
-            this->children.erase(this->children.begin() + i);
+    for (uint i = 0; i < this->items.size(); i++) {
+        if (this->items.at(i).item.name == item.name) {
+            this->items.erase(this->items.begin() + i);
             return;
         }
     }
@@ -44,23 +44,23 @@ JT::removeKey(const JsonItem& key)
 
 
 void
-JT::setKey(const JsonItem& key)
+JT::setItem(const JsonItem& item)
 {
-    this->key = key;
+    this->item = item;
 }
 
 
 JsonItem&
-JT::getValue()
+JT::getItem()
 {
-    return this->key;
+    return this->item;
 }
 
 
 vector<JT>&
-JT::getKeys()
+JT::getItems()
 {
-    return this->children;
+    return this->items;
 }
 
 
@@ -71,7 +71,7 @@ JT::extractPath()
     stack<string> parts;
 
     for (JsonTree *cur = this; cur->parent != NULL; cur = this->parent)
-        parts.push(cur->key.name);
+        parts.push(cur->item.name);
 
     while (!parts.empty()) {
         path += "/" + parts.top();
@@ -83,44 +83,33 @@ JT::extractPath()
 
 
 vector<JsonTree*>
-JT::findAllKeys(const string& key)
+JT::findAllItems(const string& item)
 {
     static vector<JsonTree*> matches;
 
-    for (auto& node : this->children) {
-        if (node.key.name == key)
+    for (auto& node : this->items) {
+        if ((node.item.name == item) && (node.item.value_type != NONE))
             matches.push_back(&node);
 
-        node.findAllKeys(key);
+        node.findAllItems(item);
     }
-
-//    JsonTree *match;
-
-//    for (auto& node : this->children) {
-//        match = node.findKey(key);
-
-//        while (match != NULL) {
-//            matches.push_back(match);
-
-//        }
-//    }
 
     return matches;
 }
 
 
 JsonTree*
-JT::findKey(const string& key)
+JT::findItem(const string& item)
 {
     static vector<JsonTree*> nodes;
 
-    for (auto& node : this->children) {
+    for (auto& node : this->items) {
         nodes.push_back(&node);
 
-        if (node.key.name == key)
+        if ((node.item.name == item) && (node.item.value_type != NONE))
             return nodes.back();
 
-        if (node.findKey(key) == NULL)
+        if (node.findItem(item) == NULL)
             nodes.pop_back();
     }
 
@@ -128,29 +117,6 @@ JT::findKey(const string& key)
 }
 
 
-//bool
-//JT::findKey(vector<JsonTree*>& nodes, const string& key)
-//{
-//    //static vector<JsonTree*> nodes;
-
-//    for (auto& node : this->children) {
-//        nodes.push_back(&node);
-
-//        if (node.key.name == key) {
-//            //return nodes;
-//            return true;
-//        }
-
-//        if (!node.findKey(nodes, key))
-//            nodes.pop_back();
-//    }
-
-//    return false;//NULL;
-//}
-
-
-// the type has to have an overloaded
-// std::ostream << operator for print to work
 void
 JT::printTree(int depth)
 {
@@ -158,15 +124,15 @@ JT::printTree(int depth)
         cout << (i != depth - 1 ? "    " : "|... ");
 
 
-    if (!this->key.name.empty()) {
-        if (this->key.key_type == STR)
-            cout << '"' << this->key.name << "\" ";
+    if (!this->item.name.empty()) {
+        if (this->item.key_type == STR)
+            cout << '"' << this->item.name << "\" ";
         else
-            cout << this->key.name + ' ';
+            cout << this->item.name + ' ';
     }
 
 
-    switch (this->key.value_type) {
+    switch (this->item.value_type) {
     case OBJ:
         cout << "(object)\n";
         break;
@@ -192,6 +158,6 @@ JT::printTree(int depth)
     }
 
 
-    for (uint i = 0; i < this->children.size(); i++)
-        this->children.at(i).printTree(depth + 1);
+    for (uint i = 0; i < this->items.size(); i++)
+        this->items.at(i).printTree(depth + 1);
 }

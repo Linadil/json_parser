@@ -11,7 +11,6 @@
 #include "symbols.h"
 #include "jsontree.h"
 
-//#define DEBUG
 
 using namespace std;
 
@@ -19,8 +18,6 @@ using namespace std;
 class Rule
 {
 public:
-    Rule();
-
     Rule(int ruleNum);
 
     auto getNum() -> int;
@@ -34,20 +31,18 @@ private:
 class JsonParser
 {
 public:
-    JsonParser();
+    JsonTree tree;
+
 
     JsonParser(const string& path);
 
     ~JsonParser();
 
     auto parse() -> vector<Rule>;
-    auto printJson() -> void;
 
-
-    JsonTree tree;
+    auto getTree() -> const JsonTree*;
 
 private:
-
     stack<JsonTree*> nodes;
     stack<Symbol> symbol_stack;
     map<Symbol, map<Symbol, int>> table;
@@ -56,10 +51,8 @@ private:
 
 
     auto lexer(const char sym) -> Symbol;
+
     auto getRuleByNum() -> void;
-#ifdef DEBUG
-    auto printStack(stack<Symbol> stack) -> void;
-#endif
 };
 
 #endif // JSONPARSER_H

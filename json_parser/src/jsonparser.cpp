@@ -3,11 +3,6 @@
 typedef JsonParser JP;
 
 
-JP::JsonParser()
-{
-
-}
-
 
 JP::JsonParser(const string& path)
 {
@@ -28,7 +23,7 @@ JP::JsonParser(const string& path)
     table[NTS_VALUE][TS_F]         = 12; // FALSE
     table[NTS_VALUE][TS_N]         = 13; // NULL
 
-    tree.getValue().value_type = OBJ;
+    tree.getItem().value_type = OBJ;
     nodes.push(&tree);
 }
 
@@ -104,7 +99,7 @@ JP::parse()
                 switch (sym) {
                 case TS_MARK:
                     if (!escape_mark) {
-                        nodes.top()->addKey({
+                        nodes.top()->addItem({
                             .name = key,
                             .key_type = STR,
                             .value_type = NONE
@@ -142,7 +137,7 @@ JP::parse()
                 case TS_OBJ_END:
                 case TS_ARR_END:
                     symbol_stack.pop();
-                    nodes.top()->addKey({
+                    nodes.top()->addItem({
                         .name = key,
                         .key_type = NUM,
                         .value_type = NONE
@@ -202,23 +197,23 @@ JP::parse()
                     symbol_stack.pop();
                     symbol_stack.push(NTS_OBJ); // OBJ
 
-                    switch (nodes.top()->getValue().value_type) {
+                    switch (nodes.top()->getItem().value_type) {
                     case OBJ:
                         cout << "from OBJ:\n";
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         cout << "push\n";
-                        nodes.top()->getValue().value_type = OBJ;
+                        nodes.top()->getItem().value_type = OBJ;
                         cout << "set type\n";
                         break;
                     case ARR:
                         cout << "from ARR:\n";
-                        nodes.top()->addKey({
+                        nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = OBJ
                         });
                         cout << "+obj\n";
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         cout << "push\n";
                         break;
                     default: break;
@@ -229,23 +224,23 @@ JP::parse()
                     symbol_stack.pop();
                     symbol_stack.push(NTS_ARR); // ARR
 
-                    switch (nodes.top()->getValue().value_type) {
+                    switch (nodes.top()->getItem().value_type) {
                     case OBJ:
                         cout << "from OBJ:\n";
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         cout << "push\n";
-                        nodes.top()->getValue().value_type = ARR;
+                        nodes.top()->getItem().value_type = ARR;
                         cout << "set type\n";
                         break;
                     case ARR:
                         cout << "from ARR:\n";
-                        nodes.top()->addKey({
+                        nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = ARR
                         });
                         cout << "set type\n";
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         cout << "push\n";
                         break;
                     default: break;
@@ -253,23 +248,23 @@ JP::parse()
                     break;
                 case 5: // [VALUE][MARK]
                     cout << "[VALUE][MARK]\n";
-                    switch (nodes.top()->getValue().value_type) {
+                    switch (nodes.top()->getItem().value_type) {
                     case OBJ:
                         cout << "from OBJ:\n";
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         cout << "push\n";
-                        nodes.top()->getValue().value_type = STR;
+                        nodes.top()->getItem().value_type = STR;
                         cout << "set type string\n";
                         break;
                     case ARR:
                         cout << "from ARR\n";
-                        nodes.top()->addKey({
+                        nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = STR
                         });
                         cout << "+string\n";
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         cout << "push\n";
                         break;
                     default: break;
@@ -304,23 +299,23 @@ JP::parse()
                     symbol_stack.pop();
                     symbol_stack.push(NTS_NUM); // NUM
 
-                    switch (nodes.top()->getValue().value_type) {
+                    switch (nodes.top()->getItem().value_type) {
                     case OBJ:
                         cout << "from OBJ:\n";
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         cout << "push\n";
-                        nodes.top()->getValue().value_type = NUM;
+                        nodes.top()->getItem().value_type = NUM;
                         cout << "set type num\n";
                         break;
                     case ARR:
                         cout << "from ARR:\n";
-                        nodes.top()->addKey({
+                        nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = NUM
                         });
                         cout << "+number\n";
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         cout << "push\n";
                         break;
                     default: break;
@@ -333,23 +328,23 @@ JP::parse()
                     symbol_stack.push(TS_R);
                     symbol_stack.push(TS_T);
 
-                    switch (nodes.top()->getValue().value_type) {
+                    switch (nodes.top()->getItem().value_type) {
                     case OBJ:
-                        nodes.push(&nodes.top()->getKeys().back());
-                        nodes.top()->getValue().value_type = BOOL;
+                        nodes.push(&nodes.top()->getItems().back());
+                        nodes.top()->getItem().value_type = BOOL;
                         break;
                     case ARR:
-                        nodes.top()->addKey({
+                        nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = BOOL
                         });
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         break;
                     default: break;
                     }
 
-                    nodes.top()->addKey({
+                    nodes.top()->addItem({
                         .name = "true",
                         .key_type = BOOL,
                         .value_type = NONE
@@ -363,23 +358,23 @@ JP::parse()
                     symbol_stack.push(TS_A);
                     symbol_stack.push(TS_F);
 
-                    switch (nodes.top()->getValue().value_type) {
+                    switch (nodes.top()->getItem().value_type) {
                     case OBJ:
-                        nodes.push(&nodes.top()->getKeys().back());
-                        nodes.top()->getValue().value_type = BOOL;
+                        nodes.push(&nodes.top()->getItems().back());
+                        nodes.top()->getItem().value_type = BOOL;
                         break;
                     case ARR:
-                        nodes.top()->addKey({
+                        nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = BOOL
                         });
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         break;
                     default: break;
                     }
 
-                    nodes.top()->addKey({
+                    nodes.top()->addItem({
                         .name = "false",
                         .key_type = BOOL,
                         .value_type = NONE
@@ -392,23 +387,23 @@ JP::parse()
                     symbol_stack.push(TS_U);
                     symbol_stack.push(TS_N);
 
-                    switch (nodes.top()->getValue().value_type) {
+                    switch (nodes.top()->getItem().value_type) {
                     case OBJ:
-                        nodes.push(&nodes.top()->getKeys().back());
-                        nodes.top()->getValue().value_type = _NULL;
+                        nodes.push(&nodes.top()->getItems().back());
+                        nodes.top()->getItem().value_type = _NULL;
                         break;
                     case ARR:
-                        nodes.top()->addKey({
+                        nodes.top()->addItem({
                             .name = "",
                             .key_type = ARR,
                             .value_type = _NULL
                         });
-                        nodes.push(&nodes.top()->getKeys().back());
+                        nodes.push(&nodes.top()->getItems().back());
                         break;
                     default: break;
                     }
 
-                    nodes.top()->addKey({
+                    nodes.top()->addItem({
                         .name = "null",
                         .key_type = _NULL,
                         .value_type = NONE
@@ -425,23 +420,6 @@ JP::parse()
     }
 
     return rules;
-}
-
-
-void
-JP::printJson()
-{
-    //vector<Match> v;
-    tree.printTree();
-    //cout << "found " << v.size() << " matches" << endl;
-//    for (const auto& [key, value] : m)
-//        cout << key << ": " << value << endl;
-}
-
-
-Rule::Rule()
-{
-
 }
 
 
