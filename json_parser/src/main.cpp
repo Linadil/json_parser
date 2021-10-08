@@ -16,7 +16,7 @@ main(int argc, char **argv)
     int opt;
     string src_file, key;
 
-    while ((opt = getopt(argc, argv, "f:k:")) != -1) {
+    while ((opt = getopt(argc, argv, "hf:k:")) != -1) {
         switch (opt) {
         case 'f':
             src_file = optarg;
@@ -24,6 +24,7 @@ main(int argc, char **argv)
         case 'k':
             key = optarg;
             break;
+        case 'h':
         default:
             cout << "Usage: json_parser -f <filename> -k <key>" << endl;
             return -1;
