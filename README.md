@@ -1,10 +1,9 @@
-## Json Parser
+# Json Parser
 
 Программа представляет из себя LL(0)-анализатор языка ```json``` с возможностью поиска содержимого по ключам.
 
-## Инструкция по сборке и запуску программы
+## Сборка
 
-**Сборка**:
 1. ```git clone https://github.com/Linadil/json_parser.git```
 
 2. ```cd json_parser/json_parser```
@@ -17,9 +16,8 @@
 
 6. ```make```
 
+## Запуск
 
-**Запуск**:
-```
+```sh
 ./json_parser -f <filename> -k <key>
 ```
-
