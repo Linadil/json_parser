@@ -136,3 +136,4 @@ JT::printTree(int depth)
     for (uint i = 0; i < this->items.size(); i++)
         this->items.at(i).printTree(depth + 1);
 }
+

@@ -48,9 +48,7 @@ private:
 
     ifstream src;
 
-
     auto lexer(const char sym) -> Symbol;
-
     auto getRuleByNum() -> void;
 };
 
