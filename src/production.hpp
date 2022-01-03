@@ -1,4 +1,6 @@
-enum class Production
+#pragma once
+
+enum class production
 {
     Object
 };

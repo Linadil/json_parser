@@ -1,53 +1,59 @@
-// #include <iostream>
-// #include <fstream>
-// #include <getopt.h>
+#include <gtest/gtest.h>
+#include <stdio.h>
+#include "../include/fp-cpp/statement.hpp"
+#include "../src/symbol.hpp"
+#include "../src/jsonparser.hpp"
 
-// // #include "../src/jsonparser.h"
-
-// using namespace std;
-
-
-// auto printHelp() -> void;
+using namespace alionapermes;
+using namespace std;
 
 
-// int
-// main(int argc, char **argv)
-// {
-//     int opt;
-//     string src_file, key;
+TEST(simple, matchPattern)
+{
+    char z = 'z';
+    int test = match(z, -1, {
+        {'x', 1},
+        {'y', 2},
+        {'z', 3}
+    });
 
-//     while ((opt = getopt(argc, argv, "hf:k:")) != -1) {
-//         switch (opt) {
-//         case 'f':
-//             src_file = optarg;
-//             break;
-//         case 'k':
-//             key = optarg;
-//             break;
-//         case 'h':
-//         default:
-//             cout << "Usage: json_parser -f <filename> -k <key>" << endl;
-//             return -1;
-//         }
-//     }
+    ASSERT_EQ(test, 3);
+}
 
+TEST(funcs, matchPattern)
+{
+    symbol sym = symbol::NTS_OBJECT;
+    using func = void (*)(void);
 
-//     JsonParser parser(src_file);
-//     parser.parse();
+    func f1 = [](){ printf("NTS OBJECT\n"); };
+    func f2 = [](){ printf("NTS ARRAY\n"); };
 
-//     vector<JsonTree*> matches = parser.tree.findAllItems(key);
+    auto produce = match<symbol, func>(
+        sym, (func)NULL, {
+        {symbol::NTS_OBJECT, f1},
+        {symbol::NTS_ARRAY, f2}
+    });
 
-//     for (const auto& match : matches) {
-//         cout << endl;
+    ASSERT_NE(produce, (func)NULL);
+    // produce();
+}
 
-//         cout <<'"' << match->extractPath() << "\":" << endl;
-//         match->printTree();
+TEST(stack, matchPattern)
+{
+    json_parser jp("");
+    jp.matchTable(symbol::TS_OBJECT_START);
 
-//         cout << endl;
-//     }
+    ASSERT_EQ(jp.expected.top(), symbol::TS_OBJECT_START);
+    jp.expected.pop();
+    ASSERT_EQ(jp.expected.top(), symbol::NTS_PAIR);
+    jp.expected.pop();
+    ASSERT_EQ(jp.expected.top(), symbol::TS_OBJECT_END);
+    jp.expected.pop();
+    ASSERT_TRUE(jp.expected.empty());
+}
 
-//     return 0;
-// }
-
-
-main() {}
+int main(int argc, char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

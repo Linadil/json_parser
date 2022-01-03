@@ -2,7 +2,7 @@
 #define SYMBOLS_H
 
 
-enum Symbol {
+enum symbol {
     NTS_OBJ,      // {PAIR}
     NTS_ARR,      // [VALUE]
     NTS_VALUE,    //

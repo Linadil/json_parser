@@ -1,6 +1,8 @@
+#pragma once
+
 namespace alionapermes {
 
-enum class Symbol
+enum symbol
 {
     NTS_ITEM,   // <string>
     NTS_OBJECT, // { NTS_PAIR , }
@@ -19,6 +21,7 @@ enum class Symbol
     TS_COMMA,        // ,
     TS_CHAR,         // 'a'-'z', '0'-'9', <special symbols> ????
     TS_NUMBER,       // 0..9
+    TS_MARK,         // "
     TS_ESCAPE,       // eh?
     
     TS_T, // t char

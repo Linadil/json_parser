@@ -1,12 +1,14 @@
+#pragma once
+
 #include "jsonitemtype.hpp"
 
 namespace alionapermes {
 
 
-struct JsonItem
+struct json_item
 {
-    string_view name;
-    JsonItemType type;
+    const char* name;
+    json_item_t type;
 };
 
 }

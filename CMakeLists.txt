@@ -4,5 +4,6 @@ project(json_parser)
 set(CMAKE_CXX_STANDARD 20)
 
 
-add_subdirectory(test)
-add_subdirectory(lib)
+if (TESTS)
+    add_subdirectory(test)
+endif()

@@ -1,4 +1,6 @@
-enum class JsonItemType
+#pragma once
+
+enum class json_item_t
 {
     Object,
     Array,

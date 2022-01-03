@@ -4,17 +4,20 @@ project(test)
 set(CMAKE_CXX_STANDARD 20)
 
 set(EXEC test)
-set(LIB_TO_TEST ${CMAKE_SOURCE_DIR}/build/libjson_parser.a)
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(SOURCES
     test.cpp
+)
+set(TEST_SOURCES
+    ${SRC_DIR}/jsonitem.cpp
+    ${SRC_DIR}/jsonparser.cpp
 )
 
 
 enable_testing()
-find_package(gtest)
+find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
-add_executable(${EXEC} ${SOURCES})
+add_executable(${EXEC} ${SOURCES} ${TEST_SOURCES})
 
 target_link_libraries(${EXEC} ${GTEST_LIBRARIES} pthread)
-target_link_libraries(${EXEC} ${LIB_TO_TEST})

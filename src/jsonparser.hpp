@@ -1,43 +1,70 @@
+#pragma once
+
 #include <string_view>
 #include <map>
 #include <stack>
+#include <functional>
 
-#include "../lib/libtree/tree.hpp"
-#include "jsonitemtype.hpp"
+#include "../include/libtree/tree.hpp"
+#include "../include/fp-cpp/statement.hpp"
+// #include "jsonitemtype.hpp"
 #include "jsonitem.hpp"
 #include "symbol.hpp"
 #include "production.hpp"
 
-using namespace std;
+#define TESTING
+
 namespace alionapermes {
 
-typedef tree<JsonItem> JsonTree;
+using namespace std;
+
+typedef tree<json_item> json_tree;
 typedef string_view::const_iterator sview_citer;
 
-using ProduceFunc = void (*)(void);
 
-
-class JsonParser
+class json_parser
 {
 public:
-    JsonParser(const string_view& json);
+    json_parser(const char* json);
 
-    const JsonTree&
+    const json_tree&
     parse();
 
-    Symbol
+    symbol
     lexer(char c);
 
+#ifndef TESTING
 private:
-    string_view json;
-    JsonTree items;
-    stack<Symbol> expected;
+#endif
+    using produce_func = void (*)(json_parser*);
+    const char* json;
+    json_tree items;
+    stack<symbol> expected;
+    map<symbol, map<symbol, function<void(void)>>> table;
 
     void
-    produceObject();
+    initTable();
 
     void
-    produceArray();
+    matchTable(symbol sym);
+
+    function<void(void)> produceObject = [this]() {
+        this->expected.push(symbol::TS_OBJECT_END);
+        this->expected.push(symbol::NTS_PAIR);
+        this->expected.push(symbol::TS_OBJECT_START);
+    };
+
+    function<void(void)> produceArray = [this]() {
+        this->expected.push(symbol::TS_ARRAY_END);
+        this->expected.push(symbol::NTS_ITEM);
+        this->expected.push(symbol::TS_ARRAY_START);
+    };
+
+    void
+    produceNumber();
+
+    void
+    produceString();
 
     void
     producePair();
