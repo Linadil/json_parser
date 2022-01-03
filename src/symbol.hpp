@@ -2,12 +2,14 @@ namespace alionapermes {
 
 enum class Symbol
 {
+    NTS_ITEM,   // <string>
     NTS_OBJECT, // { NTS_PAIR , }
     NTS_ARRAY,  // [ ITEM , ]
     NTS_PAIR,   // NAME : ITEM
     NTS_TRUE,   // true
     NTS_FALSE,  // false
     NTS_NULL,   // null
+    NTS_STRING, // <string>
 
     TS_OBJECT_START, // {
     TS_OBJECT_END,   // }

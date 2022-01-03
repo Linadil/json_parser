@@ -1,7 +1,5 @@
 #include "jsonparser.hpp"
 
-#include <stack>
-
 using namespace std;
 using namespace alionapermes;
 
@@ -10,19 +8,62 @@ typedef JsonItem     ji;
 typedef JsonItemType jit;
 
 
-const JsonTree&
-jp::objectParser(sview_citer begin, sview_citer end)
+jp::JsonParser(const string_view& json)
 {
-    stack<Symbol> expected;
-    expected.push(Symbol::NTS_OBJECT);
+    this->json = json;
+    this->expected.push(Symbol::NTS_ITEM);
+}
 
-    for (auto it = begin; it != end; it++) {
-        Symbol sym = jp::lexer(*it);
+void
+jp::produceObject()
+{
+    this->expected.push(Symbol::TS_OBJECT_START);
+    this->expected.push(Symbol::NTS_PAIR);
+    this->expected.push(Symbol::TS_OBJECT_END);
+}
 
-        switch (expected.top()) {
-            //
-        }
-    }
+void
+jp::produceArray()
+{
+    this->expected.push(Symbol::TS_ARRAY_START);
+    this->expected.push(Symbol::NTS_ITEM);
+    this->expected.push(Symbol::TS_ARRAY_END);
+}
+
+void
+jp::producePair()
+{
+    this->expected.push(Symbol::NTS_STRING);
+    this->expected.push(Symbol::TS_CHAIN);
+    this->expected.push(Symbol::NTS_ITEM);
+}
+
+void
+jp::produceTrue()
+{
+    this->expected.push(Symbol::TS_T);
+    this->expected.push(Symbol::TS_R);
+    this->expected.push(Symbol::TS_U);
+    this->expected.push(Symbol::TS_E);
+}
+
+void
+jp::produceFalse()
+{
+    this->expected.push(Symbol::TS_F);
+    this->expected.push(Symbol::TS_A);
+    this->expected.push(Symbol::TS_L);
+    this->expected.push(Symbol::TS_S);
+    this->expected.push(Symbol::TS_E);
+}
+
+void
+jp::produceNull()
+{
+    this->expected.push(Symbol::TS_N);
+    this->expected.push(Symbol::TS_U);
+    this->expected.push(Symbol::TS_L);
+    this->expected.push(Symbol::TS_L);
 }
 
 Symbol
@@ -57,5 +98,23 @@ jp::lexer(char c)
 //      case 'l': return Symbol::TS_L;
 
         default: return Symbol::TS_UNKNOWN;
+    }
+}
+
+const JsonTree&
+jp::parse()
+{
+    const char* ltr = this->json.data();
+
+    while (ltr != '\0') {
+        Symbol sym = this->lexer(*ltr);
+
+        if (this->expected.top() == sym) {
+            ltr++;
+            this->expected.pop();
+            continue;
+        }
+
+        //
     }
 }

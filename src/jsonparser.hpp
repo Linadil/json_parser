@@ -1,19 +1,27 @@
 #include <string_view>
+#include <map>
+#include <stack>
 
 #include "../lib/libtree/tree.hpp"
 #include "jsonitemtype.hpp"
 #include "jsonitem.hpp"
 #include "symbol.hpp"
+#include "production.hpp"
 
+using namespace std;
 namespace alionapermes {
 
 typedef tree<JsonItem> JsonTree;
-typedef std::string_view::const_iterator sview_citer;
+typedef string_view::const_iterator sview_citer;
+
+using ProduceFunc = void (*)(void);
 
 
 class JsonParser
 {
 public:
+    JsonParser(const string_view& json);
+
     const JsonTree&
     parse();
 
@@ -21,31 +29,27 @@ public:
     lexer(char c);
 
 private:
+    string_view json;
     JsonTree items;
-    
-    const JsonTree&
-    (*handler)(sview_citer begin, sview_citer end);
+    stack<Symbol> expected;
 
-    const JsonTree&
-    objectParser(sview_citer begin, sview_citer end);
+    void
+    produceObject();
 
-    const JsonTree&
-    arrayParser(sview_citer begin, sview_citer end);
+    void
+    produceArray();
 
-    const JsonTree&
-    stringParser(sview_citer begin, sview_citer end);
+    void
+    producePair();
 
-    const JsonTree&
-    numberParser(sview_citer begin, sview_citer end);
+    void
+    produceTrue();
 
-    const JsonTree&
-    trueParser(sview_citer begin, sview_citer end);
+    void
+    produceFalse();
 
-    const JsonTree&
-    falseParser(sview_citer begin, sview_citer end);
-
-    const JsonTree&
-    nullParser(sview_citer begin, sview_citer end);
+    void
+    produceNull();
 };
 
 }
