@@ -11,44 +11,8 @@ typedef json_item_t jit;
 jp::json_parser(const char* json)
 {
     this->json = json;
-    this->expected.push(symbol::NTS_OBJECT);
-    this->initTable();
-}
-
-void
-jp::producePair()
-{
-    this->expected.push(symbol::NTS_STRING);
-    this->expected.push(symbol::TS_CHAIN);
     this->expected.push(symbol::NTS_ITEM);
-}
-
-void
-jp::produceTrue()
-{
-    this->expected.push(symbol::TS_T);
-    this->expected.push(symbol::TS_R);
-    this->expected.push(symbol::TS_U);
-    this->expected.push(symbol::TS_E);
-}
-
-void
-jp::produceFalse()
-{
-    this->expected.push(symbol::TS_F);
-    this->expected.push(symbol::TS_A);
-    this->expected.push(symbol::TS_L);
-    this->expected.push(symbol::TS_S);
-    this->expected.push(symbol::TS_E);
-}
-
-void
-jp::produceNull()
-{
-    this->expected.push(symbol::TS_N);
-    this->expected.push(symbol::TS_U);
-    this->expected.push(symbol::TS_L);
-    this->expected.push(symbol::TS_L);
+    this->initTable();
 }
 
 symbol
@@ -100,22 +64,54 @@ jp::parse()
             continue;
         }
 
-        this->matchTable(sym);
-        // todo
+        try {
+            this->matchWithExpected(sym);
+        } catch (const char* str) {
+            printf("error: %s\n", str);
+        }
     }
 }
 
 void
-jp::matchTable(symbol sym)
+jp::matchWithExpected(symbol sym)
 {
     auto produce = this->table[this->expected.top()][sym];
     this->expected.pop();
-    produce();
+
+    if (produce) {
+        produce();
+    } else {
+        throw "unexcepted token";
+    }
 }
 
 void
 jp::initTable()
 {
-    this->table[NTS_OBJECT][TS_OBJECT_START] = produceObject;
-    this->table[NTS_ARRAY][TS_ARRAY_START]   = produceArray;
+    this->table[NTS_ITEM][TS_OBJECT_START] = this->produceObject;
+    this->table[NTS_ITEM][TS_ARRAY_START]  = this->produceArray;
+    this->table[NTS_ITEM][TS_T]            = this->produceTrue;
+    this->table[NTS_ITEM][TS_F]            = this->produceFalse;
+    this->table[NTS_ITEM][TS_N]            = this->produceNull;
+    this->table[NTS_ITEM][TS_MINUS]        = this->produceNumber;
+    this->table[NTS_ITEM][TS_NUMBER]       = this->produceNumber;
+    this->table[NTS_ITEM][TS_MARK]         = this->produceString;
+
+    this->table[NTS_OBJECT_END_COMMA][TS_OBJECT_END] = this->produceObjectEnd;
+    this->table[NTS_OBJECT_END_COMMA][TS_COMMA]      = this->produceNextPair;
+
+    this->table[NTS_ARRAY_END_COMMA][TS_ARRAY_END] = this->produceArrayEnd;
+    this->table[NTS_ARRAY_END_COMMA][TS_COMMA]     = this->produceNextItem;
+
+    this->table[NTS_PAIR][TS_MARK] = this->producePair;
+
+    this->table[NTS_STRING][TS_NUMBER] = this->produceString; // number
+    this->table[NTS_STRING][TS_DOT]    = this->produceString; // dot
+    this->table[NTS_STRING][TS_CHAR]   = this->produceString; // char
+    this->table[NTS_STRING][TS_MARK]   = this->produceMark;   // mark
+
+    this->table[NTS_NUMBER][TS_NUMBER]     = this->produceNumber;
+    this->table[NTS_NUMBER][TS_DOT]        = this->produceNumber;
+    this->table[NTS_NUMBER][TS_OBJECT_END] = this->produceObjectEnd;
+    this->table[NTS_NUMBER][TS_ARRAY_END]  = this->produceArrayEnd;
 }
