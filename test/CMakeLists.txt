@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
-project(test)
+project(json_parser)
+
+add_compile_options(-g3 -ggdb)
 
 set(CMAKE_CXX_STANDARD 20)
 

@@ -8,36 +8,6 @@ using namespace alionapermes;
 using namespace std;
 
 
-TEST(simple, matchPattern)
-{
-    char z = 'z';
-    int test = match(z, -1, {
-        {'x', 1},
-        {'y', 2},
-        {'z', 3}
-    });
-
-    ASSERT_EQ(test, 3);
-}
-
-// TEST(funcs, matchPattern)
-// {
-//     symbol sym = symbol::NTS_OBJECT;
-//     using func = void (*)(void);
-
-//     func f1 = [](){ printf("NTS OBJECT\n"); };
-//     func f2 = [](){ printf("NTS ARRAY\n"); };
-
-//     auto produce = match<symbol, func>(
-//         sym, (func)NULL, {
-//         {symbol::NTS_OBJECT, f1},
-//         {symbol::NTS_ARRAY, f2}
-//     });
-
-//     ASSERT_NE(produce, (func)NULL);
-//     // produce();
-// }
-
 TEST(stack, matchPattern)
 {
     json_parser jp("");
